@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>みえすぎ。プロジェクト指示書</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700;900&family=Shippori+Mincho:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0a0a0a;
+    --white: #f5f0e8;
+    --accent: #ff3b1f;
+    --dim: #2a2a2a;
+    --muted: #666;
+    --eye: #ff3b1f;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 999;
+    opacity: 0.4;
+  }
+
+  .wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 60px 28px 100px;
+  }
+
+  /* HEADER */
+  .header {
+    text-align: center;
+    padding: 60px 0 50px;
+    position: relative;
+  }
+
+  .eye-row {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 28px;
+    animation: blink 4s infinite;
+  }
+
+  @keyframes blink {
+    0%, 90%, 100% { opacity: 1; }
+    95% { opacity: 0; }
+  }
+
+  .eye {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--accent);
+    position: relative;
+    box-shadow: 0 0 12px rgba(255,59,31,0.6);
+  }
+
+  .eye::after {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background: var(--black);
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .title-main {
+    font-size: clamp(52px, 12vw, 88px);
+    font-weight: 900;
+    letter-spacing: -2px;
+    line-height: 1;
+    color: var(--white);
+  }
+
+  .title-main span {
+    color: var(--accent);
+  }
+
+  .title-sub {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 13px;
+    color: var(--muted);
+    letter-spacing: 6px;
+    margin-top: 16px;
+    text-transform: uppercase;
+  }
+
+  .concept-line {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 15px;
+    color: var(--white);
+    opacity: 0.7;
+    margin-top: 32px;
+    border-left: 2px solid var(--accent);
+    padding-left: 16px;
+    text-align: left;
+    display: inline-block;
+  }
+
+  /* SECTION */
+  .section {
+    margin-top: 56px;
+    border-top: 1px solid #222;
+    padding-top: 40px;
+  }
+
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 8px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .section-title {
+    font-size: 26px;
+    font-weight: 900;
+    margin-bottom: 20px;
+    letter-spacing: -0.5px;
+  }
+
+  /* CONCEPT BOX */
+  .concept-box {
+    background: #111;
+    border: 1px solid #2a2a2a;
+    border-left: 3px solid var(--accent);
+    padding: 28px 28px;
+    border-radius: 2px;
+  }
+
+  .concept-box p {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 20px;
+    line-height: 1.9;
+    color: var(--white);
+  }
+
+  .concept-box .sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 12px;
+    letter-spacing: 2px;
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+  }
+
+  /* CHARA */
+  .chara-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 4px;
+  }
+
+  .chara-item {
+    background: #111;
+    border: 1px solid #222;
+    padding: 18px 20px;
+    border-radius: 2px;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .chara-item .label {
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 4px;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  /* RIVAL */
+  .rival-box {
+    background: #111;
+    border: 1px solid #2a2a2a;
+    padding: 24px 28px;
+    border-radius: 2px;
+  }
+
+  .rival-compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  .rival-col {
+    padding: 16px;
+    border-radius: 2px;
+    font-size: 14px;
+  }
+
+  .rival-col.them {
+    background: #1a1a1a;
+    border: 1px solid #333;
+  }
+
+  .rival-col.us {
+    background: #1a0a0a;
+    border: 1px solid var(--accent);
+  }
+
+  .rival-col .tag {
+    font-size: 10px;
+    letter-spacing: 3px;
+    margin-bottom: 8px;
+    display: block;
+    color: var(--muted);
+  }
+
+  .rival-col.us .tag { color: var(--accent); }
+
+  /* CONTENT FORMAT */
+  .format-box {
+    background: #0d0d0d;
+    border: 1px solid #222;
+    padding: 28px;
+    border-radius: 2px;
+    font-family: 'Shippori Mincho', serif;
+  }
+
+  .format-example {
+    font-size: 17px;
+    line-height: 2.2;
+    color: var(--white);
+    opacity: 0.9;
+  }
+
+  .format-example .star {
+    color: var(--accent);
+    font-weight: bold;
+  }
+
+  /* ROADMAP */
+  .roadmap {
+    position: relative;
+    padding-left: 28px;
+  }
+
+  .roadmap::before {
+    content: '';
+    position: absolute;
+    left: 7px;
+    top: 8px;
+    bottom: 8px;
+    width: 1px;
+    background: linear-gradient(to bottom, var(--accent), transparent);
+  }
+
+  .roadmap-item {
+    position: relative;
+    margin-bottom: 36px;
+  }
+
+  .roadmap-item::before {
+    content: '';
+    position: absolute;
+    left: -24px;
+    top: 8px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px rgba(255,59,31,0.5);
+  }
+
+  .roadmap-phase {
+    font-size: 10px;
+    letter-spacing: 5px;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+
+  .roadmap-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .roadmap-body {
+    font-size: 13px;
+    color: #aaa;
+    line-height: 1.8;
+  }
+
+  /* REVENUE TABLE */
+  .revenue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .revenue-table th {
+    text-align: left;
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: var(--muted);
+    border-bottom: 1px solid #222;
+    padding: 8px 12px;
+  }
+
+  .revenue-table td {
+    padding: 14px 12px;
+    border-bottom: 1px solid #1a1a1a;
+    vertical-align: top;
+  }
+
+  .revenue-table tr:last-child td { border-bottom: none; }
+
+  .phase-tag {
+    display: inline-block;
+    font-size: 10px;
+    letter-spacing: 2px;
+    padding: 2px 8px;
+    border-radius: 1px;
+  }
+
+  .phase-tag.seed { background: #1a1a1a; color: var(--muted); border: 1px solid #333; }
+  .phase-tag.grow { background: #1a0f00; color: #ff8c42; border: 1px solid #ff8c42; }
+  .phase-tag.scale { background: #0a1a0a; color: #4caf50; border: 1px solid #4caf50; }
+
+  /* FIRST STEP */
+  .first-step {
+    background: var(--accent);
+    color: var(--black);
+    padding: 32px 28px;
+    border-radius: 2px;
+    margin-top: 40px;
+  }
+
+  .first-step .fs-label {
+    font-size: 10px;
+    letter-spacing: 6px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    opacity: 0.6;
+  }
+
+  .first-step .fs-text {
+    font-size: 20px;
+    font-weight: 900;
+    line-height: 1.5;
+  }
+
+  /* YOUTUBE SECTION */
+  .yt-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .yt-card {
+    background: #111;
+    border: 1px solid #222;
+    padding: 20px 24px;
+    border-radius: 2px;
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.2s, background 0.2s;
+  }
+
+  .yt-card:hover {
+    border-color: var(--accent);
+    background: #160808;
+  }
+
+  .yt-num {
+    font-size: 32px;
+    font-weight: 900;
+    color: var(--accent);
+    line-height: 1;
+    min-width: 36px;
+    opacity: 0.5;
+  }
+
+  .yt-content {}
+
+  .yt-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    line-height: 1.4;
+  }
+
+  .yt-desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  .yt-tag {
+    display: inline-block;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 2px 7px;
+    border-radius: 1px;
+    margin-top: 10px;
+  }
+
+  /* FOOTER */
+  .footer {
+    text-align: center;
+    margin-top: 80px;
+    padding-top: 40px;
+    border-top: 1px solid #1a1a1a;
+  }
+
+  .footer .eye-row { margin-bottom: 16px; }
+
+  .footer p {
+    font-size: 11px;
+    color: #444;
+    letter-spacing: 3px;
+  }
+
+  @media (max-width: 520px) {
+    .chara-grid { grid-template-columns: 1fr; }
+    .rival-compare { grid-template-columns: 1fr; }
+    .title-main { font-size: 56px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="eye-row">
+      <div class="eye"></div>
+      <div class="eye"></div>
+      <div class="eye"></div>
+      <div class="eye"></div>
+      <div class="eye"></div>
+    </div>
+    <div class="title-main">みえすぎ<span>。</span></div>
+    <div class="title-sub">Project Brief — めだらけ × 占い</div>
+    <div class="concept-line">
+      全部見えてるけど、何もできない。<br>
+      見すぎて、疲れた。
+    </div>
+  </div>
+
+  <!-- CONCEPT -->
+  <div class="section">
+    <div class="section-label">01 — Concept</div>
+    <div class="section-title">コンセプト</div>
+    <div class="concept-box">
+      <p>「目がたくさんある＝全部見えてる」<br>だから、未来も見えてしまう。</p>
+      <p style="margin-top:16px; font-size:14px; opacity:0.7;">
+        見えすぎて疲れてるのに、ちゃんと伝えてくれる。<br>
+        癒しじゃなくて「わかる…」という共感が武器。
+      </p>
+      <div class="sub">CATCHCOPY — あなたのこと、全部見えてる。</div>
+    </div>
+  </div>
+
+  <!-- CHARACTER -->
+  <div class="section">
+    <div class="section-label">02 — Character</div>
+    <div class="section-title">キャラクター設定</div>
+    <div class="chara-grid">
+      <div class="chara-item">
+        <span class="label">IDENTITY</span>
+        見えすぎる占いモンスター
+      </div>
+      <div class="chara-item">
+        <span class="label">TONE</span>
+        シュール。疲れてる。でも的確。
+      </div>
+      <div class="chara-item">
+        <span class="label">STRENGTH</span>
+        全部お見通しだけど、言い方がシュール
+      </div>
+      <div class="chara-item">
+        <span class="label">EMOTION</span>
+        「わかる…」という共感を生む
+      </div>
+    </div>
+  </div>
+
+  <!-- TARGET -->
+  <div class="section">
+    <div class="section-label">03 — Target</div>
+    <div class="section-title">ターゲット</div>
+    <div class="concept-box">
+      <p style="font-size:16px;">20〜30代女性</p>
+      <p style="font-size:13px; margin-top:12px; opacity:0.7; font-family: 'Zen Kaku Gothic New', sans-serif;">
+        不安や疲れを抱えている／シュールなものが好き<br>
+        占い好きでSNSにシェアする習慣がある
+      </p>
+    </div>
+  </div>
+
+  <!-- RIVAL -->
+  <div class="section">
+    <div class="section-label">04 — Positioning</div>
+    <div class="section-title">競合ポジション</div>
+    <div class="rival-box">
+      <p style="font-size:13px; color:#aaa;">競合：おぱんちゅうさぎを意識して差別化</p>
+      <div class="rival-compare">
+        <div class="rival-col them">
+          <span class="tag">おぱんちゅうさぎ</span>
+          「かわいそう」<br>共感・癒し・弱さ
+        </div>
+        <div class="rival-col us">
+          <span class="tag">めだらけ</span>
+          「見えすぎ」<br>看破・シュール・疲労感
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FORTUNE -->
+  <div class="section">
+    <div class="section-label">05 — Content</div>
+    <div class="section-title">占いコンテンツ設計</div>
+    <div class="concept-box" style="margin-bottom:16px;">
+      <p style="font-size:14px; font-family:'Zen Kaku Gothic New',sans-serif;">
+        種類：<strong>西洋占星術ベース</strong><br>
+        理由：グローバルで通じる・ロジックが体系的・海外展開できる<br>
+        頻度：<strong>週1投稿</strong>からスタート
+      </p>
+    </div>
+    <div class="format-box">
+      <p style="font-size:10px; letter-spacing:4px; color:#666; margin-bottom:16px;">EXAMPLE FORMAT</p>
+      <div class="format-example">
+        <span class="star">今週の◯座　めだらけより</span><br><br>
+        「じーっ。<br>
+        今週あなた、逃げようとしてるの見えてる。<br>
+        でも逃げていい。それが正解の週。」
+      </div>
+    </div>
+  </div>
+
+  <!-- ROADMAP -->
+  <div class="section">
+    <div class="section-label">06 — Roadmap</div>
+    <div class="section-title">行動計画</div>
+    <div class="roadmap">
+      <div class="roadmap-item">
+        <div class="roadmap-phase">MONTH 01</div>
+        <div class="roadmap-title">種まき期</div>
+        <div class="roadmap-body">
+          西洋占星術の基礎をYouTubeで勉強開始<br>
+          投稿フォーマットを1つ決める<br>
+          Xで週1投稿スタート
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-phase">MONTH 02–03</div>
+        <div class="roadmap-title">型を作る期</div>
+        <div class="roadmap-body">
+          12星座分の投稿フォーマットを確立<br>
+          Instagramにも展開<br>
+          反応が良かった投稿を分析して型を磨く
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-phase">MONTH 04–06</div>
+        <div class="roadmap-title">認知育成期</div>
+        <div class="roadmap-body">
+          毎週投稿を継続<br>
+          フォロワーの反応からキャラ設定を深める<br>
+          YouTubeチャンネルとの連携を検討
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-phase">MONTH 06+</div>
+        <div class="roadmap-title">収益化フェーズ</div>
+        <div class="roadmap-body">
+          LINEスタンプ第2弾を占いテーマで制作<br>
+          占いコンテンツの課金化を検討<br>
+          グッズ展開・コラボ案件
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REVENUE -->
+  <div class="section">
+    <div class="section-label">07 — Revenue</div>
+    <div class="section-title">収益化ロードマップ</div>
+    <table class="revenue-table">
+      <thead>
+        <tr>
+          <th>フェーズ</th>
+          <th>目安</th>
+          <th>収益源</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="phase-tag seed">SEED</span></td>
+          <td style="color:#aaa;">0〜6ヶ月</td>
+          <td style="color:#666;">種まき。収益より認知優先。</td>
+        </tr>
+        <tr>
+          <td><span class="phase-tag grow">GROW</span></td>
+          <td style="color:#aaa;">6〜12ヶ月</td>
+          <td style="color:#aaa;">スタンプ収益・SNS案件</td>
+        </tr>
+        <tr>
+          <td><span class="phase-tag scale">SCALE</span></td>
+          <td style="color:#aaa;">1年以降</td>
+          <td style="color:#aaa;">グッズ・課金コンテンツ・コラボ</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- YOUTUBE -->
+  <div class="section">
+    <div class="section-label">08 — Study</div>
+    <div class="section-title">おすすめYouTube 3本</div>
+    <div class="yt-cards">
+
+      <a class="yt-card" href="https://www.youtube.com/watch?v=bi9csuKDIe4" target="_blank">
+        <div class="yt-num">01</div>
+        <div class="yt-content">
+          <div class="yt-title">5分でわかる！西洋占星術 基本のき<br>— 三井一二三</div>
+          <div class="yt-desc">
+            「なんか難しそう」という初心者の壁を5分で壊してくれる動画。ホロスコープって何？から始まる最初の一本。まず全体像をつかむのに最適。
+          </div>
+          <span class="yt-tag">STEP 1 — 全体像</span>
+        </div>
+      </a>
+
+      <a class="yt-card" href="https://www.youtube.com/watch?v=CO9WGgJKt_E" target="_blank">
+        <div class="yt-num">02</div>
+        <div class="yt-content">
+          <div class="yt-title">西洋占星術 入門・基礎講座ライブ<br>— 山田ありす</div>
+          <div class="yt-desc">
+            ホロスコープの作り方からネイタルチャートの読み方まで丁寧に解説。ライブ形式なので質問を想定した説明が多く、独学向き。
+          </div>
+          <span class="yt-tag">STEP 2 — 実践基礎</span>
+        </div>
+      </a>
+
+      <a class="yt-card" href="https://www.youtube.com/channel/UCP1vxAJDM8grzBvocWf_FxQ" target="_blank">
+        <div class="yt-num">03</div>
+        <div class="yt-content">
+          <div class="yt-title">占いラボ — 原宿占い館タリム</div>
+          <div class="yt-desc">
+            占星術・タロット・手相など複数の占術をバラエティ形式で学べるチャンネル。「占いを使いこなす言葉の感覚」を身につけるのに最適。コンテンツのトーンの参考にもなる。
+          </div>
+          <span class="yt-tag">STEP 3 — 言葉の感覚</span>
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- FIRST STEP -->
+  <div class="first-step">
+    <div class="fs-label">TODAY'S ACTION — 今日やること一つだけ</div>
+    <div class="fs-text">
+      上のYouTube①を今日見る。<br>
+      それだけでいい。
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="eye-row">
+      <div class="eye"></div>
+      <div class="eye"></div>
+      <div class="eye"></div>
+    </div>
+    <p>MIEDAKE PROJECT — みえすぎ。</p>
+  </div>
+
+</div>
+</body>
+</html>
