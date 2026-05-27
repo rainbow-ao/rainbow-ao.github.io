@@ -29,7 +29,7 @@ def get_channel_analytics(access_token, start_date, end_date):
         "ids": "channel==MINE",
         "startDate": start_date,
         "endDate": end_date,
-        "metrics": "views,estimatedMinutesWatched,averageViewDuration,impressions,impressionClickThroughRate",
+        "metrics": "views,estimatedMinutesWatched,averageViewDuration,likes,comments",
         "dimensions": "video",
         "sort": "-views",
         "maxResults": 50,
@@ -107,35 +107,37 @@ def main():
     for row in rows_28:
         vid = get_val(row, "video")
         meta = video_meta.get(vid, {})
-        ctr = get_val(row, "impressionClickThroughRate")
-        impressions = get_val(row, "impressions")
         views = get_val(row, "views")
         avg_dur = get_val(row, "averageViewDuration")
+        likes = get_val(row, "likes")
+        comments = get_val(row, "comments")
+        watch_min = get_val(row, "estimatedMinutesWatched")
         title = meta.get("title", vid)
+        like_rate = (likes / views * 100) if (views and likes) else None
         video_rows.append({
             "id": vid,
             "title": title,
             "views": views,
-            "impressions": impressions,
-            "ctr": ctr,
             "avg_duration": avg_dur,
+            "likes": likes,
+            "comments": comments,
+            "watch_min": watch_min,
+            "like_rate": like_rate,
             "pattern": analyze_title_pattern(title),
         })
 
     video_rows.sort(key=lambda x: x["views"] or 0, reverse=True)
 
-    top5 = video_rows[:5]
-    bottom5 = [v for v in video_rows if (v["impressions"] or 0) > 10][-5:]
-
     pattern_stats = {}
     for v in video_rows:
         p = v["pattern"]
         if p not in pattern_stats:
-            pattern_stats[p] = {"count": 0, "ctr_sum": 0, "ctr_n": 0}
+            pattern_stats[p] = {"count": 0, "views_sum": 0, "like_rate_sum": 0, "like_rate_n": 0}
         pattern_stats[p]["count"] += 1
-        if v["ctr"] is not None:
-            pattern_stats[p]["ctr_sum"] += v["ctr"]
-            pattern_stats[p]["ctr_n"] += 1
+        pattern_stats[p]["views_sum"] += v["views"] or 0
+        if v["like_rate"] is not None:
+            pattern_stats[p]["like_rate_sum"] += v["like_rate"]
+            pattern_stats[p]["like_rate_n"] += 1
 
     def overall_row(data):
         rows = data.get("rows", [])
@@ -158,71 +160,50 @@ def main():
     o7_headers = [c["name"] for c in overall_7.get("columnHeaders", [])]
     o7_views = ov(o7, o7_headers, "views")
 
-    # 動画別CTRの平均をチャンネルCTRとして使用
-    ctr_values = [v["ctr"] for v in video_rows if v["ctr"] is not None]
-    channel_avg_ctr = sum(ctr_values) / len(ctr_values) if ctr_values else None
+    best_video = max(video_rows, key=lambda x: x["views"] or 0, default=None)
+    best_like_video = max((v for v in video_rows if v["like_rate"] is not None), key=lambda x: x["like_rate"], default=None)
 
     now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
     lines = []
-    lines.append(f"# rainbow_tone チャンネル分析レポート")
+    lines.append("# rainbow_tone チャンネル分析レポート")
     lines.append(f"更新日時: {now_str}\n")
+    lines.append("> ※ CTR・インプレッションはYouTube Analytics APIの非公開データのため、YouTube Studioで直接確認してください。\n")
 
-    lines.append("## チャンネル全体")
-    lines.append(f"| 期間 | 再生数 | 総視聴時間(分) | 登録者増加 |")
-    lines.append(f"|------|--------|--------------|----------|")
-    lines.append(f"| 直近28日 | {int(o28_views):,} | {int(o28_watch):,} | +{int(o28_subs)} |")
-    lines.append(f"| 直近7日 | {int(o7_views):,} | — | — |\n")
-    lines.append(f"**動画別平均CTR（直近28日）: {format_ctr(channel_avg_ctr)}**\n")
+    lines.append("## チャンネル全体（直近28日）")
+    lines.append("| 再生数 | 総視聴時間(分) | 登録者増加 | 直近7日再生数 |")
+    lines.append("|--------|--------------|----------|-----------  |")
+    lines.append(f"| {int(o28_views):,} | {int(o28_watch):,} | +{int(o28_subs)} | {int(o7_views):,} |\n")
 
     lines.append("## 動画別パフォーマンス（直近28日・再生数順）")
-    lines.append("| タイトル | 再生数 | インプレッション | CTR | 平均視聴時間 | タイトル形式 |")
-    lines.append("|---------|--------|----------------|-----|------------|------------|")
+    lines.append("| タイトル | 再生数 | 平均視聴時間 | いいね率 | タイトル形式 |")
+    lines.append("|---------|--------|------------|--------|------------|")
     for v in video_rows[:15]:
-        title_short = v["title"][:30] + "…" if len(v["title"]) > 30 else v["title"]
+        title_short = v["title"][:28] + "…" if len(v["title"]) > 28 else v["title"]
         avg_s = int(v["avg_duration"]) if v["avg_duration"] else 0
         avg_fmt = f"{avg_s//60}:{avg_s%60:02d}" if avg_s else "N/A"
-        lines.append(
-            f"| {title_short} | {int(v['views'] or 0):,} | {int(v['impressions'] or 0):,} | {format_ctr(v['ctr'])} | {avg_fmt} | {v['pattern']} |"
-        )
+        like_str = f"{v['like_rate']:.2f}%" if v["like_rate"] is not None else "N/A"
+        lines.append(f"| {title_short} | {int(v['views'] or 0):,} | {avg_fmt} | {like_str} | {v['pattern']} |")
     lines.append("")
 
-    lines.append("## タイトル形式別CTR比較")
-    lines.append("| タイトル形式 | 動画数 | 平均CTR |")
-    lines.append("|------------|--------|--------|")
-    for p, s in pattern_stats.items():
-        avg_ctr = s["ctr_sum"] / s["ctr_n"] if s["ctr_n"] > 0 else None
-        lines.append(f"| {p} | {s['count']} | {format_ctr(avg_ctr)} |")
+    lines.append("## タイトル形式別パフォーマンス比較")
+    lines.append("| タイトル形式 | 動画数 | 合計再生数 | 平均いいね率 |")
+    lines.append("|------------|--------|----------|------------|")
+    for p, s in sorted(pattern_stats.items(), key=lambda x: x[1]["views_sum"], reverse=True):
+        avg_lr = s["like_rate_sum"] / s["like_rate_n"] if s["like_rate_n"] > 0 else None
+        lr_str = f"{avg_lr:.2f}%" if avg_lr is not None else "N/A"
+        lines.append(f"| {p} | {s['count']} | {s['views_sum']:,} | {lr_str} |")
     lines.append("")
 
-    lines.append("## CTR改善アクション（次の動画への推奨）")
-
-    best_ctr_video = max((v for v in video_rows if v["ctr"] is not None), key=lambda x: x["ctr"], default=None)
-    worst_ctr_video = min(
-        (v for v in video_rows if v["ctr"] is not None and (v["impressions"] or 0) > 20),
-        key=lambda x: x["ctr"], default=None
-    )
-
-    if best_ctr_video:
-        lines.append(f"### 勝ちパターン（最高CTR: {format_ctr(best_ctr_video['ctr'])}）")
-        lines.append(f"- 動画: {best_ctr_video['title']}")
-        lines.append(f"- タイトル形式: {best_ctr_video['pattern']}")
-        lines.append(f"- このパターンを次の動画のタイトルに適用する\n")
-
-    if worst_ctr_video:
-        lines.append(f"### 要改善（最低CTR: {format_ctr(worst_ctr_video['ctr'])}）")
-        lines.append(f"- 動画: {worst_ctr_video['title']}")
-        lines.append(f"- サムネイルまたはタイトルの見直しを検討\n")
-
-    channel_ctr = o28_ctr if o28_ctr else 0
-    lines.append("### 次回動画チェックリスト")
-    lines.append(f"- 動画別平均CTR: {format_ctr(channel_avg_ctr)}")
-    if channel_avg_ctr is None or channel_avg_ctr < 3.0:
-        lines.append("- [ ] サムネイルにキャラクター（ヴェイル）を配置する")
-        lines.append("- [ ] タイトルは情景タイトル形式（「〇〇していたら〇〇した時のBGM」）")
+    lines.append("## 次回動画チェックリスト")
+    if best_video:
+        lines.append(f"**直近28日の最多再生動画**: {best_video['title'][:40]} ({int(best_video['views'] or 0):,}回)\n")
+    lines.append("- [ ] サムネイルにキャラクター（ヴェイル）を配置する")
+    lines.append("- [ ] タイトルは情景タイトル形式（「〇〇していたら〇〇した時のBGM」）")
     lines.append("- [ ] タイトルに 作業用 / 勉強用 / 睡眠用 / 配信用 を含める")
     lines.append("- [ ] 説明欄にBOOTHリンクを入れる")
     lines.append("- [ ] ShortとLongをセットで投稿し相互リンクする")
+    lines.append("\n> CTR確認: YouTube Studio → アナリティクス → リーチ → インプレッションのクリック率")
 
     report = "\n".join(lines)
 
@@ -230,7 +211,7 @@ def main():
         f.write(report)
 
     print("完了: video_report.md を生成しました")
-    print(f"動画別平均CTR（28日）: {format_ctr(channel_avg_ctr)}")
+    print(f"直近28日再生数: {int(o28_views):,}")
 
 
 if __name__ == "__main__":
