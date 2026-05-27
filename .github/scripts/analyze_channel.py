@@ -44,7 +44,7 @@ def get_overall_analytics(access_token, start_date, end_date):
         "ids": f"channel=={CHANNEL_ID}",
         "startDate": start_date,
         "endDate": end_date,
-        "metrics": "views,estimatedMinutesWatched,impressions,impressionClickThroughRate,subscribersGained",
+        "metrics": "views,estimatedMinutesWatched,subscribersGained",
     })
     r.raise_for_status()
     return r.json()
@@ -148,13 +148,15 @@ def main():
         return row[idx] if idx >= 0 and idx < len(row) else 0
 
     o28_views = ov(o28, o28_headers, "views")
-    o28_ctr = ov(o28, o28_headers, "impressionClickThroughRate")
-    o28_imp = ov(o28, o28_headers, "impressions")
     o28_subs = ov(o28, o28_headers, "subscribersGained")
+    o28_watch = ov(o28, o28_headers, "estimatedMinutesWatched")
 
     o7_headers = [c["name"] for c in overall_7.get("columnHeaders", [])]
     o7_views = ov(o7, o7_headers, "views")
-    o7_ctr = ov(o7, o7_headers, "impressionClickThroughRate")
+
+    # 動画別CTRの平均をチャンネルCTRとして使用
+    ctr_values = [v["ctr"] for v in video_rows if v["ctr"] is not None]
+    channel_avg_ctr = sum(ctr_values) / len(ctr_values) if ctr_values else None
 
     now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
@@ -163,10 +165,11 @@ def main():
     lines.append(f"更新日時: {now_str}\n")
 
     lines.append("## チャンネル全体")
-    lines.append(f"| 期間 | 再生数 | インプレッション | CTR | 登録者増加 |")
-    lines.append(f"|------|--------|----------------|-----|----------|")
-    lines.append(f"| 直近28日 | {int(o28_views):,} | {int(o28_imp):,} | {format_ctr(o28_ctr)} | +{int(o28_subs)} |")
-    lines.append(f"| 直近7日 | {int(o7_views):,} | — | {format_ctr(o7_ctr)} | — |\n")
+    lines.append(f"| 期間 | 再生数 | 総視聴時間(分) | 登録者増加 |")
+    lines.append(f"|------|--------|--------------|----------|")
+    lines.append(f"| 直近28日 | {int(o28_views):,} | {int(o28_watch):,} | +{int(o28_subs)} |")
+    lines.append(f"| 直近7日 | {int(o7_views):,} | — | — |\n")
+    lines.append(f"**動画別平均CTR（直近28日）: {format_ctr(channel_avg_ctr)}**\n")
 
     lines.append("## 動画別パフォーマンス（直近28日・再生数順）")
     lines.append("| タイトル | 再生数 | インプレッション | CTR | 平均視聴時間 | タイトル形式 |")
@@ -209,8 +212,8 @@ def main():
 
     channel_ctr = o28_ctr if o28_ctr else 0
     lines.append("### 次回動画チェックリスト")
-    lines.append(f"- チャンネル平均CTR: {format_ctr(channel_ctr)}")
-    if channel_ctr < 3.0:
+    lines.append(f"- 動画別平均CTR: {format_ctr(channel_avg_ctr)}")
+    if channel_avg_ctr is None or channel_avg_ctr < 3.0:
         lines.append("- [ ] サムネイルにキャラクター（ヴェイル）を配置する")
         lines.append("- [ ] タイトルは情景タイトル形式（「〇〇していたら〇〇した時のBGM」）")
     lines.append("- [ ] タイトルに 作業用 / 勉強用 / 睡眠用 / 配信用 を含める")
@@ -223,7 +226,7 @@ def main():
         f.write(report)
 
     print("完了: video_report.md を生成しました")
-    print(f"チャンネルCTR（28日）: {format_ctr(channel_ctr)}")
+    print(f"動画別平均CTR（28日）: {format_ctr(channel_avg_ctr)}")
 
 
 if __name__ == "__main__":
