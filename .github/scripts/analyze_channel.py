@@ -26,7 +26,7 @@ def get_access_token():
 def get_channel_analytics(access_token, start_date, end_date):
     headers = {"Authorization": f"Bearer {access_token}"}
     r = requests.get(f"{ANALYTICS_BASE}/reports", headers=headers, params={
-        "ids": f"channel=={CHANNEL_ID}",
+        "ids": "channel==MINE",
         "startDate": start_date,
         "endDate": end_date,
         "metrics": "views,estimatedMinutesWatched,averageViewDuration,impressions,impressionClickThroughRate",
@@ -34,6 +34,8 @@ def get_channel_analytics(access_token, start_date, end_date):
         "sort": "-views",
         "maxResults": 50,
     })
+    if not r.ok:
+        print(f"Analytics API error: {r.status_code} {r.text}")
     r.raise_for_status()
     return r.json()
 
@@ -41,11 +43,13 @@ def get_channel_analytics(access_token, start_date, end_date):
 def get_overall_analytics(access_token, start_date, end_date):
     headers = {"Authorization": f"Bearer {access_token}"}
     r = requests.get(f"{ANALYTICS_BASE}/reports", headers=headers, params={
-        "ids": f"channel=={CHANNEL_ID}",
+        "ids": "channel==MINE",
         "startDate": start_date,
         "endDate": end_date,
         "metrics": "views,estimatedMinutesWatched,subscribersGained",
     })
+    if not r.ok:
+        print(f"Overall analytics error: {r.status_code} {r.text}")
     r.raise_for_status()
     return r.json()
 
