@@ -1,5 +1,5 @@
 # rainbow_tone チャンネル分析レポート
-更新日時: 2026-05-28 04:51 UTC
+更新日時: 2026-05-29 04:53 UTC
 
 > ※ CTR・インプレッションはYouTube Analytics APIの非公開データのため、YouTube Studioで直接確認してください。
 
